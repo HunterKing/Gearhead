@@ -12,8 +12,12 @@ import urllib.request
 import xml.etree.ElementTree
 
 SCRIPT_PATH = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-token = ''
+token = '' # Set bot token to run.
+UPDATE_CHANNEL = '' # Set channel NAME to send updates to.
+UPDATE_KEYWORDS = ['NSW'] # Set the list of keywords to search for.
+ROLES = '' # Set the roles that can send bot commands.
 update_frequency = 60 * 10
+bot = commands.Bot('!')
 
 class GameUpdate:
     def __init__(self, name, link):
@@ -102,13 +106,11 @@ def get_updates(info_names):
 
     return updates
 
-bot = commands.Bot('!')
-
 async def update():
     print('Checking for updates...')
 
-    channel = discord.utils.get(bot.get_all_channels(), name='information-submission')
-    updates = get_updates(['NSW-BigBlueBox', 'NSW-HR', 'NSW-LiGHTFORCE'])
+    channel = discord.utils.get(bot.get_all_channels(), name= UPDATE_CHANNEL)
+    updates = get_updates(UPDATE_KEYWORDS)
 
     if not updates:
         print('No updates found.')
@@ -134,7 +136,7 @@ class InfoCheck:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_any_role('Owner', 'Data admin')
+    @commands.has_any_role(ROLES)
     @commands.command(pass_context=True, name="update")
     async def update_command(self):
         try:
@@ -142,7 +144,7 @@ class InfoCheck:
         except Exception as e:
             print('update_command: An error ocurred: {}'.format(str(e)))
 
-    @commands.has_any_role('Owner', 'Data admin')
+    @commands.has_any_role(ROLES)
     async def terminate(self):
         print('Terminating...')
         sys.exit()
@@ -153,9 +155,9 @@ bot.loop.create_task(auto_update_check())
 print('Running...')
 
 # Read config
-with open(pathlib.Path(SCRIPT_PATH, 'config.json'), 'r') as f:
-    data = json.load(f)
-    token = data['token']
-    update_frequency = data['update_frequency']
+#with open(pathlib.Path(SCRIPT_PATH, 'config.json'), 'r') as f:
+#    data = json.load(f)
+#    token = data['token']
+#    update_frequency = data['update_frequency']
 
 bot.run(token)
